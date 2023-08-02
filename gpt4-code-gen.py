@@ -3,7 +3,7 @@ import re
 
 # Set the directory you want to start from
 rootDir = 'DIRECTORY_PATH'
-regex = re.compile(r'applicationDefaults \{(.*?)\}', re.DOTALL)
+regex = re.compile(r'applicationDefaults\s*\{.*?\}', re.DOTALL)
 file_extension = 'FILE_EXTENSION'
 
 for dirName, subdirList, fileList in os.walk(rootDir):
@@ -16,4 +16,5 @@ for dirName, subdirList, fileList in os.walk(rootDir):
                 matches = regex.findall(contents)
                 if matches:
                     print(f'File: {file_path}')
-                    print(f'Matches: {matches}')
+                    for match in matches:
+                        print(match)
