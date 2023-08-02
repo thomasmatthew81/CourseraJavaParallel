@@ -32,6 +32,9 @@ for dirName, subdirList, fileList in os.walk(rootDir):
                 lines = f.readlines()
             with open(file_path, 'w') as f:
                 for line in lines:
-                    modified_line = line.replace(text_to_remove, '')
-                    if modified_line.strip():
-                        f.write(modified_line)
+                    if text_to_remove in line:
+                        modified_line = line.replace(text_to_remove, '')
+                        if modified_line.strip():
+                            f.write(modified_line)
+                    else:
+                        f.write(line)
