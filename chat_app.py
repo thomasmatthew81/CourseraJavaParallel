@@ -1,4 +1,4 @@
-# chat_app.py
+# chat_app_reversed.py
 import streamlit as st
 
 # Global list to store chat history
@@ -11,11 +11,11 @@ def main():
 
     if st.button("Send"):
         # Append user's message to chat history
-        chat_history.append({"user": user_input})
+        chat_history.insert(0, {"user": user_input})
 
         # Get GPT's response
         response = get_gpt_response(user_input)
-        chat_history.append({"gpt": response})
+        chat_history.insert(0, {"gpt": response})
 
     display_chat()
 
