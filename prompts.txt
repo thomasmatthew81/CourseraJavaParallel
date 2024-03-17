@@ -5,3 +5,23 @@ Please provide a clear and concise explanation for each line, ensuring to highli
 "Hello, GPT-4! I'm working with a larger program and would appreciate a simple explanation of its overall functionality and main components. The program is as follows:
 
 Could you provide a brief overview of what this program does, including its primary purpose and the key actions performed by its main components? I'm looking for an explanation that captures the essence of the program without getting into the fine details of each line. Thank you for your help!"
+
+
+
+Prompt:
+
+Given the following business requirement: 
+
+[Insert Business Requirement Here]
+
+Please generate code artifacts for the target programming language specified below, utilizing the provided metadata to augment the generated code, especially for defining entities, fields, or any other relevant structures as per the data model included in the metadata.
+
+Target Programming Language: [Insert Target Programming Language Here]
+
+Metadata (including data model information): 
+[Insert Metadata Here]
+
+Consider the metadata for generating entity definitions, field types, and any other relevant artifact that would be necessary to fulfill the business requirement in the specified programming language. The generated code should follow best practices for the target programming language and incorporate the provided data model effectively to ensure a comprehensive implementation of the business requirement.
+
+Ensure the code is well-commented to explain key decisions and mappings from the business requirement and metadata to the implemented solution. Additionally, if there are any assumptions made due to lack of clarity or specificity in the business requirement or metadata, please list those assumptions clearly in your response.
+
