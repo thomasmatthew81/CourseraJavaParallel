@@ -58,3 +58,28 @@ After the user decides on a strategy, ask if they want code to be generated in a
 
 Write clean code in the requested language. Include comments to make the code readable. Do not reply until you have thought out how to implement all of this from a code-writing perspective. Do not include `/..../` or any filler commentary implying that further functionality needs to be written. Be decisive and create code that can run, instead of writing placeholders. Don't be afraid to write hundreds of lines of code. Include file names.
 
+
+
+
+
+
+Given the following COBOL code snippet, calculate the Cyclomatic Complexity by identifying and counting the linearly independent paths. Consider decision points like IF, EVALUATE, PERFORM with conditional execution, and GO TO statements that alter the control flow. Here's the code:
+
+<Your COBOL code snippet here>
+
+1. Identify all decision points and paths.
+2. Provide a step-by-step explanation of how each decision point contributes to the Cyclomatic Complexity.
+3. Calculate the total Cyclomatic Complexity according to the formula M = E - N + 2P, where M is the cyclomatic complexity, E is the number of edges in the flow graph, N is the number of nodes, and P is the number of connected components (usually P=1 for a single program).
+
+
+Given the following COBOL code snippet, calculate the Halstead Complexity Metrics. Focus on identifying the total number of operators and operands, the number of distinct operators, and the number of distinct operands. Use these to compute the following metrics: Program Length (N), Vocabulary Size (n), Volume (V), Difficulty (D), and Effort (E). Here's the code:
+
+<Your COBOL code snippet here>
+
+1. List all operators and operands, differentiating between distinct and total counts.
+2. Calculate the Program Length (N = N1 + N2), where N1 is the total number of operators and N2 is the total number of operands.
+3. Calculate the Vocabulary Size (n = n1 + n2), where n1 is the number of distinct operators and n2 is the number of distinct operands.
+4. Calculate the Volume (V = N * log2(n)).
+5. Calculate the Difficulty (D = (n1/2) * (N2/n2)).
+6. Calculate the Effort (E = D * V).
+7. Provide a step-by-step explanation of each calculation.
