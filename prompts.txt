@@ -83,3 +83,20 @@ Given the following COBOL code snippet, calculate the Halstead Complexity Metric
 5. Calculate the Difficulty (D = (n1/2) * (N2/n2)).
 6. Calculate the Effort (E = D * V).
 7. Provide a step-by-step explanation of each calculation.
+
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Serving Swagger UI from /swagger-ui/
+        registry.addResourceHandler("/swagger-ui/**")
+                .addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/");
+
+        // Serving static resources from /public/ or other paths
+        registry.addResourceHandler("/public/**")
+                .addResourceLocations("classpath:/public/");
+    }
+}
