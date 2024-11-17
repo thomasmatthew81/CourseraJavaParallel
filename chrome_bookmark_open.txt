@@ -74,9 +74,13 @@ function openBookmarksInFolder(folder) {
       }, (tab) => {
         chrome.tabs.group({ tabIds: tab.id }, (groupId) => {
           chrome.tabGroups.update(groupId, { title: child.title });
+          const tabIds = [tab.id];
           for (let i = 1; i < tabUrls.length; i++) {
             chrome.tabs.create({ url: tabUrls[i], active: false }, (newTab) => {
-              chrome.tabs.group({ tabIds: newTab.id, groupId });
+              tabIds.push(newTab.id);
+              if (tabIds.length === tabUrls.length) {
+                chrome.tabs.group({ tabIds, groupId });
+              }
             });
           }
         });
