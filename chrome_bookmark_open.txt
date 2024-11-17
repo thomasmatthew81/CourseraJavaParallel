@@ -29,17 +29,19 @@
 // popup.js
 document.addEventListener('DOMContentLoaded', () => {
   chrome.bookmarks.getTree().then((bookmarkTreeNodes) => {
-    const rootFolders = bookmarkTreeNodes[0].children;
+    const bookmarksBar = bookmarkTreeNodes[0].children.find(node => node.title === 'Bookmarks bar');
     const folderSelect = document.getElementById('folderSelect');
 
-    rootFolders.forEach(folder => {
-      if (folder.children) {
-        const option = document.createElement('option');
-        option.value = folder.id;
-        option.textContent = folder.title;
-        folderSelect.appendChild(option);
-      }
-    });
+    if (bookmarksBar && bookmarksBar.children) {
+      bookmarksBar.children.forEach(folder => {
+        if (folder.children) {
+          const option = document.createElement('option');
+          option.value = folder.id;
+          option.textContent = folder.title;
+          folderSelect.appendChild(option);
+        }
+      });
+    }
   });
 
   document.getElementById('openBookmarks').addEventListener('click', () => {
