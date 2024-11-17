@@ -72,7 +72,8 @@ function openBookmarksInFolder(folder) {
         url: tabUrls[0],
         active: false,
       }, (tab) => {
-        chrome.tabs.group({ tabIds: tab.id, createProperties: { title: child.title } }, (groupId) => {
+        chrome.tabs.group({ tabIds: tab.id }, (groupId) => {
+          chrome.tabGroups.update(groupId, { title: child.title });
           for (let i = 1; i < tabUrls.length; i++) {
             chrome.tabs.create({ url: tabUrls[i], active: false }, (newTab) => {
               chrome.tabs.group({ tabIds: newTab.id, groupId });
