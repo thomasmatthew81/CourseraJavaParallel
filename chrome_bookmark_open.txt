@@ -1,0 +1,83 @@
+// manifest.json
+{
+  "manifest_version": 3,
+  "name": "Bookmark Folder Opener",
+  "version": "1.0",
+  "permissions": ["bookmarks", "tabs"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
+
+// popup.html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Open Bookmarks</title>
+  <script src="popup.js"></script>
+</head>
+<body>
+  <label for="folderSelect">Select Bookmark Folder:</label>
+  <select id="folderSelect"></select>
+  <button id="openBookmarks">Open Bookmarks</button>
+</body>
+</html>
+
+// popup.js
+document.addEventListener('DOMContentLoaded', () => {
+  chrome.bookmarks.getTree().then((bookmarkTreeNodes) => {
+    const rootFolders = bookmarkTreeNodes[0].children;
+    const folderSelect = document.getElementById('folderSelect');
+
+    rootFolders.forEach(folder => {
+      if (folder.children) {
+        const option = document.createElement('option');
+        option.value = folder.id;
+        option.textContent = folder.title;
+        folderSelect.appendChild(option);
+      }
+    });
+  });
+
+  document.getElementById('openBookmarks').addEventListener('click', () => {
+    const folderId = document.getElementById('folderSelect').value;
+    chrome.runtime.sendMessage({ action: 'openBookmarks', folderId });
+  });
+});
+
+// background.js
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'openBookmarks') {
+    chrome.bookmarks.getSubTree(request.folderId).then((bookmarkTreeNodes) => {
+      const folder = bookmarkTreeNodes[0];
+      if (folder && folder.children) {
+        openBookmarksInFolder(folder);
+      }
+    });
+  }
+});
+
+function openBookmarksInFolder(folder) {
+  for (const child of folder.children) {
+    if (child.url) {
+      chrome.tabs.create({ url: child.url });
+    } else if (child.children) {
+      const tabUrls = child.children.map(bookmark => bookmark.url);
+      chrome.tabs.create({
+        url: tabUrls[0],
+        active: false,
+      }, (tab) => {
+        chrome.tabs.group({ tabIds: tab.id }, (groupId) => {
+          for (let i = 1; i < tabUrls.length; i++) {
+            chrome.tabs.create({ url: tabUrls[i], active: false }, (newTab) => {
+              chrome.tabs.group({ tabIds: newTab.id, groupId });
+            });
+          }
+        });
+      });
+    }
+  }
+}
