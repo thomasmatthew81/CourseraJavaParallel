@@ -1,0 +1,92 @@
+@startuml
+
+title Multi-File Perl-to-Python Conversion with Organization Recipes
+
+actor User as U
+
+participant "System (Python Orchestrator)" as S
+participant "Recipe Store" as R
+participant "LLM (API)" as L
+participant "File System" as F
+
+U -> S: Provide path to Perl repository
+note right of S
+  The user provides a directory containing:
+  - Multiple Perl programs (e.g., .pl files)
+  - Shared Perl modules (e.g., .pm files)
+
+  The goal is to convert all relevant code into Python, 
+  preserving relationships and applying org-specific recipes.
+end note
+
+S -> F: Scan directory for Perl files
+F --> S: Return list of Perl files and modules (FileList)
+
+S -> S: Analyze file structure & dependencies
+note right of S
+  The System identifies:
+  - Main Perl programs (entry points)
+  - Shared modules (reusable code)
+  - Dependencies (which program uses which module)
+end note
+
+S -> S: For each Perl file:
+    S -> S: Identify org-specific patterns and modules used
+    alt Org-specific code found
+        S -> R: Fetch relevant recipes for these patterns
+        R --> S: Return applicable recipes
+    else No org-specific code
+        note right of S
+          If no org-specific code, just standard conversion
+        end note
+    end
+
+    S -> S: Construct a prompt for the LLM
+    note right of S
+      The prompt may include:
+      - High-level instructions on conversion
+      - Relevant recipes (only for detected patterns)
+      - Possibly code snippets from dependent Perl modules 
+        if needed to give the LLM context.
+
+      If the file is large, consider segmenting it 
+      or summarizing dependencies.
+    end note
+
+    S -> L: Send prompt with Perl code & recipes
+    L --> S: Return draft Python code
+
+    S -> S: Validate and refine Python code
+    note right of S
+      Steps:
+      - Check syntax (e.g., using `ast.parse()`)
+      - Ensure org-specific imports are present
+      - Replace placeholders, if any
+      - Make sure naming conventions and module references 
+        align with other converted files.
+    end note
+
+end
+
+note left of S
+  After all files are processed, the System may:
+  - Perform a global consistency check across all produced Python files.
+  - Ensure shared modules in Perl become Python packages or modules.
+  - Update any cross-file references to match Pythonic imports.
+end note
+
+S -> S: Global consistency pass
+note right of S
+  - Ensure all references between newly converted Python files are correct.
+  - Adjust imports and package structure if needed.
+end note
+
+S --> U: Deliver final Python files
+note right of U
+  The user receives a set of Python files 
+  that correspond to the original Perl programs 
+  and modules, now translated and integrated with
+  organization-specific standards.
+end note
+
+@enduml
