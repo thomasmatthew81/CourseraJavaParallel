@@ -1,20 +1,21 @@
 import streamlit as st
-import openai
 import os
 import json
 from datetime import datetime, timedelta
+from openai import OpenAI
 
 # -----------------------
 # Configuration
 # -----------------------
-openai.api_key = os.getenv("OPENAI_API_KEY", "YOUR_OPENAI_API_KEY")
+# Instantiate the OpenAI client. It will use the OPENAI_API_KEY from the environment.
+client = OpenAI()
 
 HISTORY_FILE = "chat_history.json"
 
 MODEL_OPTIONS = [
-    "gpt-3.5-turbo",
     "gpt-4",
-    "gpt-3.5-turbo-16k"
+    "gpt-4-32k",
+    "gpt-4-turbo"
 ]
 
 # -----------------------
@@ -56,8 +57,12 @@ def categorize_sessions_by_date(sessions):
     }
 
 def generate_response_stream(messages, model_name, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, stream):
-    """Call the OpenAI ChatCompletion API in streaming mode or non-streaming mode based on 'stream' argument."""
-    response = openai.ChatCompletion.create(
+    """
+    Call the OpenAI ChatCompletion endpoint using the new client interface.
+    If stream=True, yields tokens as they arrive.
+    If stream=False, yields the full message once complete.
+    """
+    response = client.chat.completions.create(
         model=model_name,
         messages=messages,
         temperature=temperature,
@@ -69,21 +74,16 @@ def generate_response_stream(messages, model_name, temperature, max_tokens, top_
     )
 
     if stream:
-        # Streaming mode
-        full_answer = ""
+        # Streaming mode: yield tokens as they come in
         for chunk in response:
             if "choices" in chunk:
                 delta = chunk["choices"][0]["delta"]
                 if "content" in delta:
-                    token = delta["content"]
-                    full_answer += token
-                    yield token
-        return
+                    yield delta["content"]
     else:
-        # Non-streaming mode
+        # Non-streaming mode: just yield the full response
         full_answer = response.choices[0].message["content"]
         yield full_answer
-
 
 # -----------------------
 # Streamlit App
@@ -96,14 +96,19 @@ history = load_history()
 # Sidebar for settings and history navigation
 st.sidebar.title("Settings & History")
 
-selected_model = st.sidebar.selectbox("Select Model:", MODEL_OPTIONS)
+selected_model = st.sidebar.selectbox("Select Model:", MODEL_OPTIONS, index=2)  # "gpt-4-turbo" as default
 
-st.sidebar.markdown("### Parameters")
-temperature = st.sidebar.slider("Temperature", 0.0, 1.0, 0.7, 0.1)
-max_tokens = st.sidebar.number_input("Max Tokens", min_value=1, max_value=20480, value=256, step=1)
+# According to the OpenAI docs for ChatCompletion:
+# - temperature: 0 to 2
+# - max_tokens: up to model limit
+# - top_p: 0 to 1
+# - frequency_penalty: -2 to 2
+# - presence_penalty: -2 to 2
+temperature = st.sidebar.slider("Temperature", 0.0, 2.0, 0.7, 0.1)
+max_tokens = st.sidebar.number_input("Max Tokens", min_value=1, max_value=32768, value=256, step=1)
 top_p = st.sidebar.slider("Top P", 0.0, 1.0, 1.0, 0.05)
-frequency_penalty = st.sidebar.slider("Frequency Penalty", 0.0, 2.0, 0.0, 0.1)
-presence_penalty = st.sidebar.slider("Presence Penalty", 0.0, 2.0, 0.0, 0.1)
+frequency_penalty = st.sidebar.slider("Frequency Penalty", -2.0, 2.0, 0.0, 0.1)
+presence_penalty = st.sidebar.slider("Presence Penalty", -2.0, 2.0, 0.0, 0.1)
 stream_response = st.sidebar.checkbox("Stream Response", value=True)
 
 # New session creation
@@ -111,8 +116,7 @@ st.sidebar.subheader("Create a New Session")
 new_session_heading = st.sidebar.text_input("Session Heading", placeholder="e.g. 'Brainstorming Ideas'")
 create_session = st.sidebar.button("Start New Session")
 
-if create_session and new_session_heading.strip() != "":
-    # Create a new session structure
+if create_session and new_session_heading.strip():
     new_session = {
         "heading": new_session_heading.strip(),
         "timestamp": datetime.utcnow().isoformat(),
@@ -172,10 +176,9 @@ else:
         current_session["messages"].append({"role": "user", "content": user_input})
         save_history(history)
 
-        # Prepare placeholder for assistant streaming/non-streaming response
+        # Prepare placeholder for assistant's response
         assistant_placeholder = st.empty()
 
-        # Collect the assistant answer
         tokens_accumulator = ""
         for token in generate_response_stream(
             current_session["messages"],
